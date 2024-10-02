@@ -86,8 +86,11 @@ class Clock{
 function App() {
   // tasksをAppで管理し、初期状態をlocalStorageから取得
   const [tasks, setTasks] = useState(() => {
-    const savedTasks = JSON.parse(localStorage.getItem('tasks'));
+    let savedTasks = JSON.parse(localStorage.getItem('tasks'));
     console.log(savedTasks);
+    if(!(savedTasks)){
+      savedTasks = [[],[],[],[],[],[],[]];
+    }
     let lit = [[],[],[],[],[],[],[]]
     for(let i = 0;i<7;i++){
       console.log(savedTasks[i]);
