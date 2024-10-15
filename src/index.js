@@ -236,9 +236,9 @@ function Today({ tasks, setTasks }) {
   }
 
   function dete(){
-    document.getElementById("name").value = "デート";
+    document.getElementById("name").value = "ゲーセン";
     document.getElementById("starttime").value = "12:00";
-    document.getElementById("endtime").value = "17:00";
+    document.getElementById("endtime").value = "15:00";
     document.getElementById("gototime").value = "01:00";
   }
 
@@ -258,7 +258,7 @@ function Today({ tasks, setTasks }) {
       <button onClick = {()=> setjuk(7,8)}>塾7~8コマ</button>
       <button onClick = {()=> setjuk(6,8)}>塾6~8コマ</button><br/>
       <button onClick = {()=> asakawa()}>浅川家</button>
-      <button onClick = {()=> dete()}>デート</button>
+      <button onClick = {()=> dete()}>ゲーセン</button>
       <button onClick = {()=> exp()}>実験</button><br/>
       <input type="text" id="name" placeholder="Task Name" />
       <input type="time" id="starttime" placeholder="Start Time" />
