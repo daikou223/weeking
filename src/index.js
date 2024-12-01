@@ -3,45 +3,64 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+//CSSの代わりのStyle
 class Styl{
   constructor(){
+    //table
     this.table = {
-      width:"200px",
-      height:"150px"
+      width:"250px",
+      height:"160px"
     };
+    //出発時間の列
     this.go={
-      backgroundColor:"lightgreen",
+      backgroundColor:"lightyellow",
+      fontSize:"20px",
     };
+    //帰宅時間の列
     this.come={
       backgroundColor:"pink",
+      fontSize:"20px",
     };
+    //tableの1つのセル
     this.td ={
       border:"2px solid black",
     } ;
+    //1つ1つのタスク
     this.cont = {
       height:"100px",
     }
+    //ショートカットボタン
     this.button = {
       height:"50px",
       width:"50px"
     }
+    //"めも"という文字のCSS
     this.memo = {
       fontSize:"20px",
+    }
+    this.date = {
+      marginLeft:"80px",
+      fontSize:"30px",
     }
   }
 }
 const styl = new Styl();
+//おまじない
 root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
 );
 
+//時刻を制御するためのもの
+//timeオブジェクトを使用して軽量化をすべき
 class Clock{
+  //時間と分のみ気にすればよい
   constructor(hour= 0,minute= 0){
     this.hour = hour;
     this.minute = minute;
   }
+  //時刻の足し算を実装
   add(otherClock){
     let newClock = new Clock(this.hour + otherClock.hour,this.minute + otherClock.minute)
     if(newClock.minute >= 60){
@@ -50,6 +69,7 @@ class Clock{
     }
     return newClock
   }
+  //時刻の引き算を実装
   sub(otherClock){
     let newClock = new Clock(this.hour - otherClock.hour,this.minute - otherClock.minute)
     if(newClock.minute < 0){
@@ -58,6 +78,7 @@ class Clock{
     }
     return newClock
   }
+  //小なり記号を実装
   Kcompare(otherClock) {
     if(this.hour>otherClock.hour){
       return false
@@ -74,6 +95,7 @@ class Clock{
       }
     }
   }
+  //見やすい出力をできるように
   print(){
     if(this.minute == 0){
       return this.hour + ":00";
@@ -88,9 +110,11 @@ function App() {
   const [tasks, setTasks] = useState(() => {
     let savedTasks = JSON.parse(localStorage.getItem('tasks'));
     console.log(savedTasks);
+    //もし保存されてないなら，空にする
     if(!(savedTasks)){
       savedTasks = [[],[],[],[],[],[],[]];
     }
+    //時間をclock型に変更
     let lit = [[],[],[],[],[],[],[]]
     for(let i = 0;i<7;i++){
       console.log(savedTasks[i]);
@@ -107,10 +131,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
-
   return (
     <Router>
       <Routes>
+        {/*ルート定義*/}
         <Route path="/" element={<Week tasks={tasks} />} />
         <Route path="/today/:date" element={<Today tasks={tasks} setTasks={setTasks} />} />
       </Routes>
@@ -119,8 +143,33 @@ function App() {
 }
 
 function Week({ tasks }) {
+  //表の根幹部分
   const navigate = useNavigate();
-  
+  const [md,setMd] = useState(new Date());
+  const today = md.getDate();
+  const dayKind = md.getDay();
+  let mds = [
+    md.setDate(today-dayKind),
+    md.setDate(today-dayKind+1),
+    md.setDate(today-dayKind+2),
+    md.setDate(today-dayKind+3),
+    md.setDate(today-dayKind+4),
+    md.setDate(today-dayKind+5),
+    md.setDate(today-dayKind+6)
+  ]
+  if(0<=dayKind && dayKind <=1){
+    for(let i = 0;i < 7;i++){
+    md.setDate(today-dayKind+i+1);
+    mds[i] = md.getDate();
+  }
+  }
+  else{
+    for(let i = 0;i < 7;i++){
+      md.setDate(today-dayKind+i+8);
+      mds[i] = md.getDate();
+  }
+}
+  //画面遷移管理
   function setDay(day) {
     navigate(`/today/${day}`, {
       state: { date: day },
@@ -129,11 +178,12 @@ function Week({ tasks }) {
   return (
     <div>
       <table style = {styl.table}>
+        {/*月~木までのボタンを表示 */}
           <tr>
-            <td><button onClick={() => setDay(0)} style = {styl.button}>月</button></td>
-            <td><button onClick={() => setDay(1)} style = {styl.button}>火</button></td>
-            <td><button onClick={() => setDay(2)} style = {styl.button}>水</button></td>
-            <td><button onClick={() => setDay(3)} style = {styl.button}>木</button></td>
+            <td><button onClick={() => setDay(0)} style = {styl.button}>月</button> <a style = {styl.date} >{mds[0]}日</a></td>
+            <td><button onClick={() => setDay(1)} style = {styl.button}>火</button> <a style = {styl.date} >{mds[1]}日</a></td>
+            <td><button onClick={() => setDay(2)} style = {styl.button}>水</button> <a style = {styl.date} >{mds[2]}日</a></td>
+            <td><button onClick={() => setDay(3)} style = {styl.button}>木</button> <a style = {styl.date} >{mds[3]}日</a></td>
             </tr>
           <tr>
             {/* 各日のタスクを表示 */}
@@ -142,12 +192,14 @@ function Week({ tasks }) {
             <td style = {styl.td}><Task tasks = {tasks[2]} /></td>
             <td style = {styl.td}><Task tasks = {tasks[3]} /></td></tr>
           <tr>
-            <td><button onClick={() => setDay(4)} style = {styl.button}>金</button></td>
-            <td><button onClick={() => setDay(5)} style = {styl.button}>土</button></td>
-            <td><button onClick={() => setDay(6)} style = {styl.button}>日</button></td>
+            {/*金~日までのボタンを表示 */}
+            <td><button onClick={() => setDay(4)} style = {styl.button}>金</button> <a style = {styl.date} >{mds[4]}日</a></td>
+            <td><button onClick={() => setDay(5)} style = {styl.button}>土</button> <a style = {styl.date} >{mds[5]}日</a></td>
+            <td><button onClick={() => setDay(6)} style = {styl.button}>日</button> <a style = {styl.date} >{mds[6]}日</a></td>
             <td style = {styl.memo}>めも</td>
           </tr>
           <tr>
+            {/* 各日のタスクを表示 */}
             <td style = {styl.td}><Task tasks = {tasks[4]} /></td>
             <td style = {styl.td}><Task tasks = {tasks[5]} /></td>
             <td style = {styl.td}><Task tasks = {tasks[6]} /></td>
@@ -235,13 +287,6 @@ function Today({ tasks, setTasks }) {
     document.getElementById("gototime").value = "00:15";
   }
 
-  function dete(){
-    document.getElementById("name").value = "ゲーセン";
-    document.getElementById("starttime").value = "12:00";
-    document.getElementById("endtime").value = "15:00";
-    document.getElementById("gototime").value = "01:00";
-  }
-
   function exp(){
     document.getElementById("name").value = "実験";
     document.getElementById("starttime").value = "13:00";
@@ -258,7 +303,6 @@ function Today({ tasks, setTasks }) {
       <button onClick = {()=> setjuk(7,8)}>塾7~8コマ</button>
       <button onClick = {()=> setjuk(6,8)}>塾6~8コマ</button><br/>
       <button onClick = {()=> asakawa()}>浅川家</button>
-      <button onClick = {()=> dete()}>ゲーセン</button>
       <button onClick = {()=> exp()}>実験</button><br/>
       <input type="text" id="name" placeholder="Task Name" />
       <input type="time" id="starttime" placeholder="Start Time" />
@@ -282,10 +326,10 @@ function Today({ tasks, setTasks }) {
 
 function Task({tasks}){
   let tstr = [];
+  let aeryTasks = [];
   let outdoorTime = new Clock(24,0);
   let comehomeTime = new Clock(0,0);
   for(let j = 0;j<tasks.length;j++){
-    console.log(tasks[j]);
     let st = tasks[j].start;
     let et = tasks[j].end;
     let gt = tasks[j].goto;
@@ -296,9 +340,20 @@ function Task({tasks}){
     if(comehomeTime.Kcompare(et.add(gt))){
       comehomeTime = et.add(gt);
     }
-    tstr.push(
+    let p = 0;
+    for(let i = 0 ; i<aeryTasks.length;i++){
+      console.log(aeryTasks[i].start.Kcompare(tasks[j].start))
+      if((aeryTasks[i].start.Kcompare(tasks[j].start))){
+        p = i+1;
+      }
+    }
+    aeryTasks.splice(p,0,tasks[j]);
+    console.log(aeryTasks);
+  }
+  for(let j = 0;j<aeryTasks.length;j++){
+  tstr.push(
     <div>
-      <div>{tasks[j].name} : {st.print()} ~ {et.print()}</div>
+      <div>{aeryTasks[j].name} : {aeryTasks[j].start.print()} ~ {aeryTasks[j].end.print()}</div>
     </div>
     )
   }
